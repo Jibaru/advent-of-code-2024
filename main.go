@@ -7,6 +7,8 @@ import (
 	day0 "github.com/jibaru/advent-of-code-2024/day_0"
 	day1 "github.com/jibaru/advent-of-code-2024/day_1"
 	day10 "github.com/jibaru/advent-of-code-2024/day_10"
+	day11 "github.com/jibaru/advent-of-code-2024/day_11"
+	day12 "github.com/jibaru/advent-of-code-2024/day_12"
 	day2 "github.com/jibaru/advent-of-code-2024/day_2"
 	day3 "github.com/jibaru/advent-of-code-2024/day_3"
 	day4 "github.com/jibaru/advent-of-code-2024/day_4"
@@ -15,7 +17,6 @@ import (
 	day7 "github.com/jibaru/advent-of-code-2024/day_7"
 	day8 "github.com/jibaru/advent-of-code-2024/day_8"
 	day9 "github.com/jibaru/advent-of-code-2024/day_9"
-	day11 "github.com/jibaru/advent-of-code-2024/day_11"
 )
 
 func main() {
@@ -52,6 +53,8 @@ func main() {
 		answer, err = day10.Solve(*part, *isTest)
 	case 11:
 		answer, err = day11.Solve(*part, *isTest)
+	case 12:
+		answer, err = day12.Solve(*part, *isTest)
 	default:
 		err = fmt.Errorf("day not allowed")
 	}
