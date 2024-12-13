@@ -1,0 +1,28 @@
+Generalization
+
+Using:
+Button A: X+94, Y+34
+Button B: X+22, Y+67
+Prize: X=8400, Y=5400
+
+Let's say:
+x: the times that we have to press button A
+y: the times that we have to press button B
+
+We have:
+94x + 22y = 8400
+34x + 67y = 5400
+
+Then:
+x = (8400 - 22y) / 94
+x = (5400 - 67y) / 34
+
+(8400 - 22y) / 94 = (5400 - 67y) / 34
+8400*34 -22*34y = 5400*94 - 67*94y
+67*94y - 22*34y = 5400*94 - 8400*34
+(67*94 - 22*34)y = 5400*94 - 8400*34
+y = (5400*94 - 8400*34)/(67*94 - 22*34)
+
+Finally:
+y = (5400*94 - 8400*34)/(67*94 - 22*34)
+x = (8400 - 22y) / 94
