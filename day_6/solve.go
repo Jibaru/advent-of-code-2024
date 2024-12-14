@@ -27,98 +27,138 @@ func Solve(part int, isTest bool) (any, error) {
 	return nil, fmt.Errorf("part should be only 1 or 2")
 }
 
-type Pair struct {
-	i, j int
-}
-
 func partOne(data string) (any, error) {
 	mt := newMatrix(data)
 
-	i, j, val := mt.StartPos()
-
-	visited := map[Pair]bool{
-		{i, j}: true,
+	start, err := startPath(mt)
+	if err != nil {
+		return nil, err
 	}
 
-	ans := 1
-	finished := false
+	return len(guardPositions(mt, start)), nil
+}
 
-	for !finished {
-		i, j, val = mt.Next(i, j, val)
+func partTwo(data string) (any, error) {
+	mt := newMatrix(data)
 
-		if i == -1 && j == -1 {
-			finished = true
+	start, err := startPath(mt)
+	if err != nil {
+		return nil, err
+	}
+
+	positions := guardPositions(mt, start)
+
+	ans := 0
+
+	for pos := range positions {
+		if pos == start.pos {
 			continue
 		}
 
-		if _, ok := visited[Pair{i, j}]; ok {
-			continue
+		mt.values[pos.i][pos.j] = "#"
+
+		if hasLoop(mt, start) {
+			ans++
 		}
 
-		visited[Pair{i, j}] = true
-		ans++
+		mt.values[pos.i][pos.j] = "."
 	}
 
 	return ans, nil
 }
 
-func partTwo(_ string) (any, error) {
-	return "not solved yet", nil
+type Path struct {
+	pos Pos
+	dir string
 }
 
-type matrix struct {
+type Pos struct {
+	i, j int
+}
+
+type Matrix struct {
 	values [][]string
 	rsize  int
 	csize  int
 }
 
-func newMatrix(data string) *matrix {
+func newMatrix(data string) *Matrix {
 	rows := strings.Split(data, "\n")
 	var values [][]string
 	for _, row := range rows {
 		values = append(values, strings.Split(row, ""))
 	}
 
-	return &matrix{
+	return &Matrix{
 		values: values,
 		rsize:  len(rows),
 		csize:  len(rows[0]),
 	}
 }
 
-func (m *matrix) RowsLen() int {
+func (m *Matrix) RowsLen() int {
 	return m.rsize
 }
 
-func (m *matrix) ColsLen() int {
+func (m *Matrix) ColsLen() int {
 	return m.csize
 }
 
-func (m *matrix) At(i, j int) string {
+func (m *Matrix) At(i, j int) string {
 	return m.values[i][j]
 }
 
-func (m *matrix) InBounds(i int, j int) bool {
+func (m *Matrix) InBounds(i int, j int) bool {
 	return i >= 0 && i < m.RowsLen() && j >= 0 && j < m.ColsLen()
 }
 
-func (m *matrix) IsBlock(i, j int) bool {
+func (m *Matrix) IsBlock(i, j int) bool {
 	return m.values[i][j] == "#"
 }
 
-func (m *matrix) StartPos() (int, int, string) {
+func startPath(m *Matrix) (Path, error) {
 	for i, row := range m.values {
 		for j, cell := range row {
 			if cell == "^" || cell == "v" || cell == "<" || cell == ">" {
-				return i, j, cell
+				return Path{pos: Pos{i, j}, dir: cell}, nil
 			}
 		}
 	}
 
-	return -1, -1, ""
+	return Path{}, fmt.Errorf("start not found")
 }
 
-func (m *matrix) Next(i, j int, v string) (int, int, string) {
+func isOut(path Path) bool {
+	return path.pos.i == -1 && path.pos.j == -1
+}
+
+func guardPositions(m *Matrix, start Path) map[Pos]bool {
+	visited := map[Pos]bool{
+		start.pos: true,
+	}
+
+	finished := false
+	path := start
+
+	for !finished {
+		path = next(m, path)
+
+		if isOut(path) {
+			finished = true
+			continue
+		}
+
+		if _, ok := visited[path.pos]; ok {
+			continue
+		}
+
+		visited[path.pos] = true
+	}
+
+	return visited
+}
+
+func next(m *Matrix, curr Path) Path {
 	dirs := map[string][]int{
 		"^": {-1, 0},
 		">": {0, 1},
@@ -133,19 +173,41 @@ func (m *matrix) Next(i, j int, v string) (int, int, string) {
 		"<": "^",
 	}
 
-	di := i + dirs[v][0]
-	dj := j + dirs[v][1]
-	nv := v
+	di := curr.pos.i + dirs[curr.dir][0]
+	dj := curr.pos.j + dirs[curr.dir][1]
+	newDir := curr.dir
 
 	if !m.InBounds(di, dj) {
-		return -1, -1, ""
+		return Path{Pos{-1, -1}, newDir}
 	}
 
 	if m.IsBlock(di, dj) {
-		nv = nexts[v]
-		di = i + dirs[nv][0]
-		dj = j + dirs[nv][1]
+		newDir = nexts[curr.dir]
+		di = curr.pos.i
+		dj = curr.pos.j
 	}
 
-	return di, dj, nv
+	return Path{Pos{di, dj}, newDir}
+}
+
+func hasLoop(mt *Matrix, start Path) bool {
+	visited := map[Path]bool{
+		start: true,
+	}
+
+	path := start
+
+	for {
+		path = next(mt, path)
+
+		if isOut(path) {
+			return false
+		}
+
+		if visited[path] {
+			return true
+		}
+
+		visited[path] = true
+	}
 }
